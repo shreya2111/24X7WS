@@ -113,17 +113,16 @@ def algo(img,name):
 		for j in range(0,rng):
 			minm=maxDis+10000000
 
-			for k in range(len(ls)):
-				print "test ",i #, "", ls[k][0],ls[k][1]-1
-				dst=np.linalg.norm(np.array((i,j))-np.array((ls[k][0],ls[k][1]-1)))
+			for k in range(10):
 				
+				dst=round(np.linalg.norm(np.array((i,j))-np.array((ls[k][0],ls[k][1]-1))))
 				if dst<minm:
 					minm=dst	
 				#print ls[k][0]
 			dia.append(dst) #radius of ref circle
 		radius.append(dia)	
 		
-
+	add=[]	
 	for i in range(3):
 		for j in range(3):
 			
@@ -140,8 +139,9 @@ def algo(img,name):
 							centralPixel=[a,b]
 						else:
 							continue	
-				print maxRad, " ",centralPixel			
-				print img[i,j], " ",
+				#print maxRad, " ",centralPixel			
+				#print img[i,j], " "
+
 			#case 2
 			elif i-1<0 and j-1>=0:
 				print "case 2"
@@ -246,7 +246,12 @@ def algo(img,name):
 						else:
 							continue	
 				print maxRad, " ",centralPixel	
-				print img[i,j], " "				
+				print img[i,j], " "
+
+			add.append(centralPixel)					
+
+
+	print add
 
 
 #def sobel(img):
