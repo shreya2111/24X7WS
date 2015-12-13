@@ -91,7 +91,8 @@ def algo(img,name):
 	#plt.show()
 	(row,col,channel)=img.shape
 	ls=[]
-	rng=10
+	rng_row=10
+	rng_col=10
 	for i in range(0,row):
 		for j in range(0,col):
 			if edges[i,j]==255: #finding edge points
@@ -107,10 +108,10 @@ def algo(img,name):
 	radius=[]
 	maxDis=np.linalg.norm(np.array((0,0))-np.array((row,col)))
 	dst=0
-	for i in range(0,rng):
+	for i in range(0,rng_row):
 
 		dia=[]
-		for j in range(0,rng):
+		for j in range(0,rng_col):
 			minm=maxDis+10000000
 
 			for k in range(10):
@@ -123,14 +124,14 @@ def algo(img,name):
 		radius.append(dia)	
 		
 	add=[]	
-	for i in range(3):
-		for j in range(3):
+	for i in range(1,rng_row-3):
+		for j in range(1,rng_col-3):
 			
 			maxRad=radius[i][j]
 			centralPixel=[i,j]
 			#case 1
 			if i-1<0 and j-1<0:
-				print "case 1"
+				#print "case 1"
 				#compare i,j to {i+1,i+2},{j+1,j+2}
 				for a in [i,i+1,i+2]:
 					for b in [j,j+1,j+2]:
@@ -139,12 +140,11 @@ def algo(img,name):
 							centralPixel=[a,b]
 						else:
 							continue	
-				#print maxRad, " ",centralPixel			
-				#print img[i,j], " "
+				
 
 			#case 2
 			elif i-1<0 and j-1>=0:
-				print "case 2"
+				#print "case 2"
 				# i+1,i+2,j-1,j+1
 				for a in [i,i+1,i+2]:
 					for b in [j-1,j,j+1]:
@@ -153,11 +153,10 @@ def algo(img,name):
 							centralPixel=[a,b]
 						else:
 							continue	
-				print maxRad, " ",centralPixel					
-				print img[i,j], " ",
+				
 			#case 3
 			elif i-1<0 and j+1==col:
-				print "case 3"
+				#print "case 3"
 				# i+1,i+2,j-2,j-1
 				for a in [i,i+1,i+2]:
 					for b in [j-2,j-1,j]:
@@ -166,11 +165,10 @@ def algo(img,name):
 							centralPixel=[a,b]
 						else:
 							continue	
-				print maxRad, " ",centralPixel	
-				print img[i,j]	
+			
 			#case 4
 			elif i-1>=0 and j-1<0:
-				print "case 4"
+				#print "case 4"
 				# i-1,i+1,j+2,j+1
 				for a in [i-1,i,i+1]:
 					for b in [j,j+1,j+2]:
@@ -179,12 +177,11 @@ def algo(img,name):
 							centralPixel=[a,b]
 						else:
 							continue	
-				print maxRad, " ",centralPixel				
-				print img[i,j], " ",
+			
 
 			#case 5
 			elif i-1>=0 and j-1>=0:
-				print "case 5"
+				#print "case 5"
 				# i+1,i-1,j-1,j+1
 				for a in [i-1,i,i+1]:
 					for b in [j-1,j,j+1]:
@@ -193,11 +190,10 @@ def algo(img,name):
 							centralPixel=[a,b]
 						else:
 							continue	
-				print maxRad, " ",centralPixel	
-				print img[i,j], " ",	
+				
 			#case 6
 			elif i-1>=0 and j+1==col:
-				print "case 6"
+				#print "case 6"
 				# i+1,i-1,j-2,j-1
 				for a in [i-1,i,i+1]:
 					for b in [j-2,j-1,j]:
@@ -206,11 +202,10 @@ def algo(img,name):
 							centralPixel=[a,b]
 						else:
 							continue	
-				print maxRad, " ",centralPixel	
-				print img[i,j]
+		
 			#case 7
 			elif i+1==row and j-1<0:
-				print "case 7"
+				#print "case 7"
 				# i-1,i-2,j+2,j+1
 				for a in [i-2,i-1,i]:
 					for b in [j,j+1,j+2]:
@@ -219,11 +214,10 @@ def algo(img,name):
 							centralPixel=[a,b]
 						else:
 							continue	
-				print maxRad, " ",centralPixel	
-				print img[i,j], " ",
+
 			#case 8	
 			elif i+1==row and j-1>=0:
-				print "case 8"	
+				#print "case 8"	
 				# i-1,i-2,j-1,j-2
 				for a in [i-2,i-1,i]:
 					for b in [j-1,j,j-2]:
@@ -232,11 +226,10 @@ def algo(img,name):
 							centralPixel=[a,b]
 						else:
 							continue	
-				print maxRad, " ",centralPixel	
-				print img[i,j], " ",				
+				
 			#case 9	
 			elif i+1==row and j+1==col:
-				print "case 9"
+				#print "case 9"
 				# i-1,i-2,j-1,j-2
 				for a in [i-2,i-1,i]:
 					for b in [j-2,j-1,j]:
@@ -245,13 +238,99 @@ def algo(img,name):
 							centralPixel=[a,b]
 						else:
 							continue	
-				print maxRad, " ",centralPixel	
-				print img[i,j], " "
+			#print maxRad, " ",centralPixel	
+			#print img[i,j], " i ",i," j ",j
 
 			add.append(centralPixel)					
 
 
-	print add
+	#plot central pixels
+	# new=np.full((rng_row,rng_col),255,dtype=np.uint8)
+	# for i in add:
+		
+	# 	new[i[0]][i[1]]=0
+
+	# cv2.imshow('dst',new)
+	# cv2.waitKey(0)
+	# cv2.destroyAllWindows()	
+
+	
+
+	#finding central pixel groups
+	groupCPixel=[]
+	ls=[]
+	count=0
+	for i in add:
+		#print i," radius ",radius[i[0]][i[1]]
+		count+=1
+		ls.append(i)
+		c=[]
+		c.append(i)
+		for j in add:
+
+			if j in ls:
+				#print j
+				pass
+			else:
+				
+				tmp=round(np.linalg.norm(np.asarray(i)-np.asarray(j)))
+				#print "in"
+				if tmp>0 and tmp<radius[i[0]][i[1]]: #rad of central pixel
+					#print "tmp ",tmp
+					c.append(j)
+					ls.append(j)
+		ls=[]			
+		#print count			
+		#central pixel group
+		groupCPixel.append(c)
+
+	#print "length ",len(add), "group length ",len(groupCPixel)	
+	#print len(groupCPixel[0]),"--------------------",len(groupCPixel[1]),"---------------",len(groupCPixel[35])
+	
+	#print groupCPixel[0]
+	
+	for i in groupCPixel:
+
+		#line fitting using group pixel points
+		centralPixel=np.array(i)
+		#print "centralPixel ",centralPixel
+		x=centralPixel[:,0]
+		y=centralPixel[:,1]
+		#print x
+
+		# calculate polynomial
+		z = np.polyfit(x, y, 1)
+		f = np.poly1d(z)
+
+		# calculate new x's and y's
+		x_new = np.linspace(x[0], x[-1], 50)
+		y_new = f(x_new)
+
+		# plt.plot(x,y,'o', x_new, y_new)
+		# plt.xlim([x[0]-1, x[-1] + 1 ])
+		# plt.show()
+
+	
+
+
+	
+	#segmentation
+
+	#ratio of total central pixels to the avg radius of those pixels
+	#per region
+	for i in groupCPixel:
+		sum=0
+		for j in i:
+			
+			sum+=radius[j[0]][j[1]]
+		avg=sum/len(i)
+		
+		ratio=len(i)/avg
+
+		print " the ratio ",ratio, " for i "
+		print i	
+
+
 
 
 #def sobel(img):
@@ -266,8 +345,8 @@ def algo(img,name):
 
 os.chdir('../data')
 
-l=['Datarpur_Punjab.png']
-#,'Barodi_Haryana.png','Gudhana_Husainka.png']
+l=['Sample.png']
+#'Datarpur_Punjab.png','Barodi_Haryana.png','Gudhana_Husainka.png']
 
 for i in l:
 
