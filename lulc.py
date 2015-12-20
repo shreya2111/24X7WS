@@ -2,11 +2,14 @@
 #from matplotlib import cm 
 #from sobel import sobel
 #, draw, plot, show
+from itertools import izip as zip, count
 import cv2
 import numpy as np
 import os
 import json
 import re
+import math
+import time 
 
 
 def otsuFilter(color):
@@ -79,51 +82,10 @@ def contour(img):
 	#	plt.xticks([]), plt.yticks([])  # to hide tick values on X and Y axis
 	#plt.show()
 
-
-def algo(img,name):
-	edges = cv2.Canny(img,100,200)
-
-	#plt.subplot(121),plt.imshow(img,cmap = 'gray')
-	#plt.title('Original Image'), plt.xticks([]), plt.yticks([])
-	#plt.subplot(122),plt.imshow(edges,cmap = 'gray')
-	#plt.title('Edge Image'), plt.xticks([]), plt.yticks([])
-
-	#plt.show()
-	(row,col,channel)=img.shape
-	ls=[]
-	rng_row=10
-	rng_col=10
-	for i in range(0,row):
-		for j in range(0,col):
-			if edges[i,j]==255: #finding edge points
-				#store i,j				
-				ls.append([i,j])
-
-	name=re.sub('.png', '', name)
-	with open(str(name)+'Data.json','w') as f:
-		json.dump(ls,f,indent=2)
-	print name,len(ls)
-
-	#finding reference circles
-	radius=[]
-	maxDis=np.linalg.norm(np.array((0,0))-np.array((row,col)))
-	dst=0
-	for i in range(0,rng_row):
-
-		dia=[]
-		for j in range(0,rng_col):
-			minm=maxDis+10000000
-
-			for k in range(10):
-				
-				dst=round(np.linalg.norm(np.array((i,j))-np.array((ls[k][0],ls[k][1]-1))))
-				if dst<minm:
-					minm=dst	
-				#print ls[k][0]
-			dia.append(dst) #radius of ref circle
-		radius.append(dia)	
-		
+def centralPixels(rng_row,rng_col,radius):
 	add=[]	
+	radCP=[]
+
 	for i in range(1,rng_row-3):
 		for j in range(1,rng_col-3):
 			
@@ -241,49 +203,97 @@ def algo(img,name):
 			#print maxRad, " ",centralPixel	
 			#print img[i,j], " i ",i," j ",j
 
-			add.append(centralPixel)					
+			add.append(centralPixel)
+			radCP.append(maxRad)	
+	return (add,radCP)						
+
+# def groupPixel(p,rad,row,col):
+# 	#p[0]
+
+def algo(img,name):
+	edges = cv2.Canny(img,100,200)
+
+	cv2.imshow('edges',edges)
+	cv2.waitKey(0)
+	cv2.destroyAllWindows()	
+
+	#img=cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+
+	#plt.subplot(121),plt.imshow(img,cmap = 'gray')
+	#plt.title('Original Image'), plt.xticks([]), plt.yticks([])
+	#plt.subplot(122),plt.imshow(edges,cmap = 'gray')
+	#plt.title('Edge Image'), plt.xticks([]), plt.yticks([])
+	#plt.show()
+
+	(row,col)=img.shape
+	
+	rng_row=row
+	rng_col=col
+	ls=[]
+	for i in range(0,row):
+		for j in range(0,col):
+			if edges[i,j]==255: #finding edge points
+				#store i,j				
+				ls.append([i,j])
+	ls=np.array(ls,dtype=np.int64)
+	name=re.sub('.png', '', name)
+	# with open(str(name)+'Data.json','w') as f:
+	# 	json.dump(ls,f,indent=2)
+	print name,ls.shape
+
+	#finding reference circles
+	radius=[]
+	for i in range(rng_row):
+		t=time.clock()
+		dia=[]
+		for j in range(rng_col):
+			
+			tmp=np.zeros(ls.shape)
+			
+			tmp[:,0]=i
+			tmp[:,1]=j
+			dst=np.amin([round(np.linalg.norm(tmp[k,:]-ls[k,:])) for k in range(len(ls))])
+
+			dia.append(dst) #radius of ref circle
+
+		tmp=None	
+		print "time: ",time.clock()-t	
+		radius.append(dia)	
+	print "radius done"
+		
+	add,radCP=centralPixels(rng_row,rng_col,radius)	
+	print "out of if"		
+
+	#print add,radCP
 
 
 	#plot central pixels
-	# new=np.full((rng_row,rng_col),255,dtype=np.uint8)
-	# for i in add:
+	new=np.full((rng_row,rng_col),255,dtype=np.uint8)
+	for i in add:
 		
-	# 	new[i[0]][i[1]]=0
+		new[i[0]][i[1]]=0
 
-	# cv2.imshow('dst',new)
-	# cv2.waitKey(0)
-	# cv2.destroyAllWindows()	
-
-	
+	cv2.imshow('dst',new)
+	cv2.waitKey(0)
+	cv2.destroyAllWindows()	
 
 	#finding central pixel groups
 	groupCPixel=[]
-	ls=[]
-	count=0
+
 	for i in add:
-		#print i," radius ",radius[i[0]][i[1]]
-		count+=1
-		ls.append(i)
-		c=[]
-		c.append(i)
-		for j in add:
+		ls=[]
+		rad=radius[i[0]][i[1]]
+		if i[0]-rad>=0 and i[1]-rad>=0 and i[0]+rad<=rng_row and i[1]+rad<=rng_col:
 
-			if j in ls:
-				#print j
-				pass
-			else:
-				
-				tmp=round(np.linalg.norm(np.asarray(i)-np.asarray(j)))
-				#print "in"
-				if tmp>0 and tmp<radius[i[0]][i[1]]: #rad of central pixel
-					#print "tmp ",tmp
-					c.append(j)
-					ls.append(j)
-		ls=[]			
-		#print count			
-		#central pixel group
-		groupCPixel.append(c)
+			for a in xrange(int(i[0]-rad),int(i[0]+rad+1)):
+				for b in xrange(int(i[1]-rad),int(i[1]+rad+1)):
+					if [a,b] in add:
+						ls.append([a,b])
+		if ls:
+			groupCPixel.append(ls)				
 
+	print groupCPixel,"group pixel"
+	
 	#print "length ",len(add), "group length ",len(groupCPixel)	
 	#print len(groupCPixel[0]),"--------------------",len(groupCPixel[1]),"---------------",len(groupCPixel[35])
 	
@@ -306,14 +316,20 @@ def algo(img,name):
 		x_new = np.linspace(x[0], x[-1], 50)
 		y_new = f(x_new)
 
+		print x_new, y_new
+	# new=np.full((rng_row,rng_col),255,dtype=np.uint8)	
+	# for i in add:
+	# 	new[i[0]][i[1]]=0
+
+	# cv2.imshow('dst',new)
+	# cv2.waitKey(0)
+	# cv2.destroyAllWindows()	
+
 		# plt.plot(x,y,'o', x_new, y_new)
 		# plt.xlim([x[0]-1, x[-1] + 1 ])
 		# plt.show()
 
-	
-
-
-	
+	print "line plotted"	
 	#segmentation
 
 	#ratio of total central pixels to the avg radius of those pixels
@@ -345,13 +361,13 @@ def algo(img,name):
 
 os.chdir('../data')
 
-l=['Sample.png']
+l=['tmp.png']
 #'Datarpur_Punjab.png','Barodi_Haryana.png','Gudhana_Husainka.png']
 
 for i in l:
 
-	img=cv2.imread(i)
-	(row,col,channel)=img.shape
+	img=cv2.imread(i,0)
+	(row,col)=img.shape
 
 
 	#(ret,thresh)=
