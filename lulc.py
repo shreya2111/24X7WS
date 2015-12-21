@@ -7,23 +7,24 @@ from centralPixels import centralPixels
 import cv2
 import numpy as np
 import os
+import sys
 import json
 import re
 import math
 import time 
 
 
-def algo(img,name):
-	edges = cv2.Canny(img,100,200)
+def algo(edges,name):
+	#edges = cv2.Canny(img,100,200)
 
-	cv2.imshow('edges',edges)
-	cv2.waitKey(0)
-	cv2.destroyAllWindows()	
+	# cv2.imshow('edges',edges)
+	# cv2.waitKey(0)
+	# cv2.destroyAllWindows()	
 
-	(row,col)=img.shape
+	(row,col)=edges.shape
 	
-	rng_row=100
-	rng_col=100
+	rng_row=10
+	rng_col=10
 	ls=[]
 	for i in range(0,row):
 		for j in range(0,col):
@@ -132,16 +133,16 @@ def algo(img,name):
 		
 		ratio=len(i)/avg
 
-		print " the ratio ",ratio, " for i "
-		print i	
+		print " the ratio ",ratio, " for i ", len(i)
+		#print i	
 
 os.chdir('../data')
 
-l=['Barodi_Haryana.png']
-#'Datarpur_Punjab.png','Barodi_Haryana.png','Gudhana_Husainka.png']
+l=['edge6.jpg','edge8.jpg']
+#'Barodi_Haryana.png','Datarpur_Punjab.png','Barodi_Haryana.png','Gudhana_Husainka.png']
 
 for i in l:
-
+	sys.stdout = open("C:\\Users\\24X7Group\\Documents\\24X7WaterSupply\\data\\log"+str(i)+".txt", "w")
 	img=cv2.imread(i,0)
 	(row,col)=img.shape
 
